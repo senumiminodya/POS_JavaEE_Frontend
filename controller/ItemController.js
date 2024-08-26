@@ -2,15 +2,29 @@ import ItemModel from "../model/ItemModel.js";
 import {items} from "../db/Db.js";
 
 $(document).ready(function () {
+    var baseURL = "http://localhost:8080/javaEE/item";
 
     var recordIndex;
+
+    // Function to generate the next item ID in the format I-001, I-002, etc.
+    function generateNextItemId() {
+        if (items.length === 0) {
+            return 'I-001';
+        }
+        const lastItemId = items[items.length - 1]?.code; // Use optional chaining to safely access 'code'
+        if (!lastItemId) {
+            return 'I-001'; // Fallback in case lastItemId is undefined
+        }
+        const nextIdNumber = parseInt(lastItemId.split('-')[1]) + 1;
+        return `I-${nextIdNumber.toString().padStart(3, '0')}`;
+    }
 
     /* Load items to the table */
     function loadTable() {
 
         $('#item-table-tbody').empty();
 
-        items.map((item, index) => {
+        /*items.map((item, index) => {
             console.log(item)
             let record = `<tr>
                 <td class="item_code_value">${item.item_code}</td>
@@ -19,22 +33,39 @@ $(document).ready(function () {
                 <td class="item_quantity_value">${item.quantity}</td>
             </tr>`;
             $('#item-table-tbody').append(record);
+        });*/
+        console.log(items);
+        items.forEach((item) => {
+            const record = `<tr>
+                <td class="item_code_value">${item.code}</td>
+                <td class="item_name_value">${item.name}</td>
+                <td class="item_price_value">${item.price}</td>
+                <td class="item_quantity_value">${item.qty}</td>
+            </tr>`;
+            $('#item-table-tbody').append(record);
         });
     }
 
-    // Function to generate the next item ID in the format I-001, I-002, etc.
-    function generateNextItemId() {
-        if (items.length === 0) {
-            return 'I-001';
-        }
-        const lastItemId = items[items.length - 1].item_code;
-        const nextIdNumber = parseInt(lastItemId.split('-')[1]) + 1;
-        return `I-${nextIdNumber.toString().padStart(3, '0')}`;
+    function fetchItems() {
+        $.ajax({
+            url: baseURL,
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                console.log('Items retrieved successfully:', data);
+                items.length = 0; // Clear existing customers
+                items.push(...data); // Add fetched customers
+                loadTable();
+            },
+            error: function (xhr, status, error) {
+                console.error('Failed to fetch items:', status, error);
+            }
+        });
     }
 
     // Function to validate item fields
     function validateItemFields() {
-        var isValid = true;
+        let isValid = true;
         $('.error').remove(); // Clear any previous error messages
 
         if ($('#item_code').val().trim() === '') {
@@ -111,9 +142,8 @@ $(document).ready(function () {
 
     /* Search an item from table */
     $('#item-table-tbody').on('click', 'tr', function (){
-        let index = $(this).index();
-        recordIndex = index;
-        console.log("index: ", index);
+        recordIndex = $(this).index();
+        console.log("index: ", recordIndex);
 
         let item_code = $(this).find(".item_code_value").text();
         let item_name = $(this).find(".item_name_value").text();
@@ -128,7 +158,7 @@ $(document).ready(function () {
 
     /* save item */
     $('#item_save_btn').on('click', () =>{
-        let isValid = validateItemFields();
+        /*let isValid = validateItemFields();
         if (isValid) {
             var item_code = generateNextItemId();
             var item_name = $('#item_name').val();
@@ -142,12 +172,68 @@ $(document).ready(function () {
             clear();
         } else {
             console.log("Invalid fields.");
+        }*/
+
+        /*let isValid = validateItemFields();
+
+        if (isValid) {
+            const newItemCode = generateNextItemId();
+            const item = {
+                code: newItemCode,
+                name: $('#item_name').val(),
+                price: $('#item_price').val(),
+                qty: $('#item_quantity').val()
+            };
+
+            $.ajax({
+                url: baseURL,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(item),
+                success: function (data) {
+                    console.log('Item created successfully:', data);
+                    fetchItems();
+                    clear();
+                },
+                error: function (xhr, status, error) {
+                    console.error('Failed to save items:', status, error);
+                }
+            });
+        } else {
+            console.log("Invalid fields.");
+        }*/
+
+        if (validateItemFields()) {
+            const newItemCode = generateNextItemId();
+            const item = {
+                code: newItemCode,
+                name: $('#item_name').val().trim(),
+                price: $('#item_price').val().trim(),
+                qty: $('#item_quantity').val().trim()
+            };
+
+            $.ajax({
+                url: baseURL,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(item),
+                success: function (data) {
+                    console.log('Item created successfully:', data);
+                    fetchItems();
+                    clearForm();
+                },
+                error: function (xhr, status, error) {
+                    console.error('Failed to save item:', status, error);
+                }
+            });
+        } else {
+            console.log("Invalid fields.");
         }
     });
 
     /* update item */
     $('#item_update_btn').on('click', () =>{
-        var item_code = $('#item_code').val();
+        /*var item_code = $('#item_code').val();
         var item_name = $('#item_name').val();
         var item_price = $('#item_price').val();
         var item_quantity = $('#item_quantity').val();
@@ -159,25 +245,114 @@ $(document).ready(function () {
         itemObject.quantity = item_quantity;
 
         loadTable();
-        clear();
+        clear();*/
+
+        /*var itemCode = $('#item_code').val();
+        var items = {
+            code: itemCode,
+            name: $('#item_name').val(),
+            price: $('#item_price').val(),
+            qty: $('#item_quantity').val()
+        };
+
+        $.ajax({
+            url: baseURL + '/' + itemCode,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(items),
+            success: function (data) {
+                console.log('Item updated successfully:', data);
+                fetchItems();
+                clear();
+            },
+            error: function (xhr, status, error) {
+                console.error('Failed to update items:', status, error);
+            }
+        });*/
+
+        if (validateItemFields()) {
+            const itemCode = $('#item_code').val().trim();
+            const updatedItem = {
+                code: itemCode,
+                name: $('#item_name').val().trim(),
+                price: $('#item_price').val().trim(),
+                qty: $('#item_quantity').val().trim()
+            };
+
+            $.ajax({
+                url: `${baseURL}/${itemCode}`,
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify(updatedItem),
+                success: function (data) {
+                    console.log('Item updated successfully:', data);
+                    fetchItems();
+                    clearForm();
+                },
+                error: function (xhr, status, error) {
+                    console.error('Failed to update item:', status, error);
+                }
+            });
+        }
     });
 
     /* delete item */
     $("#item_delete_btn").on('click', () => {
-        items.splice(recordIndex, 1);
+        /*items.splice(recordIndex, 1);
         loadTable();
-        clear();
+        clear();*/
+
+        /*var itemCode = $('#item_code').val();
+
+        $.ajax({
+            url: baseURL + '/' + itemCode,
+            type: 'DELETE',
+            contentType: 'application/json',
+            success: function (data) {
+                console.log('Item deleted successfully:', data);
+                fetchItems();
+                clear();
+            },
+            error: function (xhr, status, error) {
+                console.error('Failed to delete items:', status, error);
+            }
+        });*/
+
+        const itemCode = $('#item_code').val().trim();
+
+        if (itemCode) {
+            $.ajax({
+                url: `${baseURL}/${itemCode}`,
+                type: 'DELETE',
+                success: function (data) {
+                    console.log('Item deleted successfully:', data);
+                    fetchItems();
+                    clearForm();
+                },
+                error: function (xhr, status, error) {
+                    console.error('Failed to delete item:', status, error);
+                }
+            });
+        } else {
+            console.error("Item Code is required to delete an item.");
+        }
     });
 
     $('#item_clear_btn').on('click', () =>{
-        clear();
+        clearForm();
     });
 
     /* clear fields */
-    function clear() {
+    function clearForm() {
         $('#item_code').val('');
         $('#item_name').val('');
         $('#item_price').val('');
         $('#item_quantity').val('');
     }
+
+    /* Load All Items */
+    $('#item_getAll_btn').on('click', ()=>{
+        console.log(items);
+    });
+    fetchItems();
 });
