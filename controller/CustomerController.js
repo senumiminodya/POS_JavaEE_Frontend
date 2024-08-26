@@ -7,12 +7,28 @@ $(document).ready(function () {
 
     var recordIndex;
 
+    generateNextCustomerId();
+
+    // Function to generate the next customer ID in the format C-001
+    function generateNextCustomerId() {
+        if (customers.length === 0) {
+            return 'C-001';
+        }else {
+            const lastCustomerId = customers[customers.length - 1].c_id;
+            if (!lastCustomerId) {
+                return 'C-001'; // If the lastCustomerId is undefined or empty, again start with C-001
+            }
+            const nextIdNumber = parseInt(lastCustomerId.split('-')[1]) + 1;
+            return `C-${nextIdNumber.toString().padStart(3, '0')}`;
+        }
+    }
+
     /* Load customers to the table */
     function loadTable() {
 
         $('#customer-table-tbody').empty();
 
-        customers.map((item, index) => {
+        /*customers.map((item, index) => {
             console.log(item)
             let record = `<tr>
                 <td class="customer_id_value">${item.c_id}</td>
@@ -21,16 +37,17 @@ $(document).ready(function () {
                 <td class="customer_phoneNo_value">${item.phoneNo}</td>
             </tr>`;
             $('#customer-table-tbody').append(record);
-        });
-        /*customers.forEach((item) => {
+        });*/
+        console.log(customers);
+        customers.forEach((item) => {
             let record = `<tr>
-                <td class="customer_id_value">${item.c_id}</td>
+                <td class="customer_id_value">${item.id}</td>
                 <td class="customer_nic_value">${item.nic}</td>
                 <td class="customer_name_value">${item.name}</td>
                 <td class="customer_phoneNo_value">${item.phoneNo}</td>
             </tr>`;
             $('#customer-table-tbody').append(record);
-        });*/
+        });
     }
 
     function fetchCustomers() {
@@ -85,15 +102,6 @@ $(document).ready(function () {
         }
 
         return isValid;
-    }
-    // Function to generate the next customer ID in the format C-001
-    function generateNextCustomerId() {
-        if (customers.length === 0) {
-            return 'C-001';
-        }
-        const lastCustomerId = customers[customers.length - 1].c_id;
-        const nextIdNumber = parseInt(lastCustomerId.split('-')[1]) + 1;
-        return `C-${nextIdNumber.toString().padStart(3, '0')}`;
     }
 
     // Real-time validation functions for each input field
@@ -175,11 +183,16 @@ $(document).ready(function () {
         }
 
     });*/
+
+
+
     $('#cus_save_btn').on('click', () => {
         let isValid = validateCustomerFields();
+
         if (isValid) {
-            var customer = {
-                id: $('#cus_id').val(),
+            const newCustomerId = generateNextCustomerId();
+            const customer = {
+                id: newCustomerId,
                 nic: $('#cus_nic').val(),
                 name: $('#cus_name').val(),
                 phoneNo: $('#cus_phoneNo').val()
@@ -243,6 +256,7 @@ $(document).ready(function () {
                 console.error('Failed to update customer:', status, error);
             }
         });
+
     });
 
     /* delete customer */
