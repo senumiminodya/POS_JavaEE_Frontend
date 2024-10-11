@@ -1,43 +1,18 @@
-import CustomerModel from "../model/CustomerModel.js";
 import {customers} from "../db/Db.js";
 
 $(document).ready(function () {
 
-    var baseURL = "http://localhost:8080/javaEE/customer";
+    var baseURL = "http://localhost:8080/api/v1/customers";
 
     var recordIndex;
 
-    generateNextCustomerId();
-
-    // Function to generate the next customer ID in the format C-001
-    function generateNextCustomerId() {
-        if (customers.length === 0) {
-            return 'C-001';
-        }else {
-            const lastCustomerId = customers[customers.length - 1].c_id;
-            if (!lastCustomerId) {
-                return 'C-001'; // If the lastCustomerId is undefined or empty, again start with C-001
-            }
-            const nextIdNumber = parseInt(lastCustomerId.split('-')[1]) + 1;
-            return `C-${nextIdNumber.toString().padStart(3, '0')}`;
-        }
-    }
+    var cusId;
 
     /* Load customers to the table */
     function loadTable() {
 
         $('#customer-table-tbody').empty();
 
-        /*customers.map((item, index) => {
-            console.log(item)
-            let record = `<tr>
-                <td class="customer_id_value">${item.c_id}</td>
-                <td class="customer_nic_value">${item.nic}</td>
-                <td class="customer_name_value">${item.name}</td>
-                <td class="customer_phoneNo_value">${item.phoneNo}</td>
-            </tr>`;
-            $('#customer-table-tbody').append(record);
-        });*/
         console.log(customers);
         customers.forEach((item) => {
             let record = `<tr>
@@ -72,14 +47,6 @@ $(document).ready(function () {
         var isValid = true;
         $('.error').remove(); // Clear any previous error messages
 
-        if ($('#cus_id').val().trim() === '') {
-            $('#cus_id').after('<span class="error text-danger" >Customer ID is required</span>');
-            isValid = false;
-        } else if (!/^(C-\d{3})$/.test($('#cus_id').val().trim())) {
-            $('#cus_id').after('<span class="error text-danger">Customer ID format is invalid. Expected format: C-001</span>');
-            isValid = false;
-        }
-
         if ($('#cus_nic').val().trim() === '') {
             $('#cus_nic').after('<span class="error text-danger">NIC is required</span>');
             isValid = false;
@@ -102,16 +69,6 @@ $(document).ready(function () {
         }
 
         return isValid;
-    }
-
-    // Real-time validation functions for each input field
-    function validateCustomerId() {
-        $('.error-id').remove(); // Clear previous error messages
-        if ($('#cus_id').val().trim() === '') {
-            $('#cus_id').after('<span class="error text-danger error-id">Customer ID is required</span>');
-        } else if (!/^(C-\d{3})$/.test($('#cus_id').val().trim())) {
-            $('#cus_id').after('<span class="error text-danger error-id">Customer ID format is invalid. Expected format: C-001</span>');
-        }
     }
 
     function validateCustomerNic() {
@@ -142,7 +99,6 @@ $(document).ready(function () {
     }
 
     // Bind the input event to trigger validation in real-time
-    $('#cus_id').on('input', validateCustomerId);
     $('#cus_nic').on('input', validateCustomerNic);
     $('#cus_name').on('input', validateCustomerName);
     $('#cus_phoneNo').on('input', validateCustomerPhoneNo);
@@ -153,46 +109,24 @@ $(document).ready(function () {
         recordIndex = index;
         console.log("index: ", index);
 
-        let cus_id = $(this).find(".customer_id_value").text();
+        cusId = $(this).find(".customer_id_value").text();
         let cus_nic = $(this).find(".customer_nic_value").text();
         let cus_name = $(this).find(".customer_name_value").text();
         let cus_phoneNo = $(this).find(".customer_phoneNo_value").text();
 
-        $("#cus_id").val(cus_id);
+        //$("#cus_id").val(cus_id);
         $("#cus_nic").val(cus_nic);
         $("#cus_name").val(cus_name);
         $("#cus_phoneNo").val(cus_phoneNo);
     });
 
-    /* save customer */
-    /*$('#cus_save_btn').on('click', () =>{
-        let isvalid =  validateCustomerFields();
-        if(isvalid) {
-            var cus_id = generateNextCustomerId();
-            var cus_nic = $('#cus_nic').val();
-            var cus_name = $('#cus_name').val();
-            var cus_phoneNo = $('#cus_phoneNo').val();
-
-            var customer = new CustomerModel(cus_id, cus_nic, cus_name, cus_phoneNo);
-
-            customers.push(customer);
-            loadTable();
-            clear();
-        } else {
-            console.log("invalid fields.")
-        }
-
-    });*/
-
-
-
     $('#cus_save_btn').on('click', () => {
         let isValid = validateCustomerFields();
 
         if (isValid) {
-            const newCustomerId = generateNextCustomerId();
+            fetchCustomers();
+
             const customer = {
-                id: newCustomerId,
                 nic: $('#cus_nic').val(),
                 name: $('#cus_name').val(),
                 phoneNo: $('#cus_phoneNo').val()
@@ -217,24 +151,8 @@ $(document).ready(function () {
         }
     });
 
-    /* update customer */
-    /*$('#cus_update_btn').on('click', () =>{
-        var cus_id = $('#cus_id').val();
-        var cus_nic = $('#cus_nic').val();
-        var cus_name = $('#cus_name').val();
-        var cus_phoneNo = $('#cus_phoneNo').val();
-
-        let customerObject = customers[recordIndex];
-        customerObject.c_id = cus_id;
-        customerObject.nic = cus_nic;
-        customerObject.name = cus_name;
-        customerObject.phoneNo = cus_phoneNo;
-
-        loadTable();
-        clear();
-    });*/
     $('#cus_update_btn').on('click', () => {
-        var customerId = $('#cus_id').val();
+        var customerId = cusId;
         var customer = {
             id: customerId,
             nic: $('#cus_nic').val(),
@@ -259,14 +177,8 @@ $(document).ready(function () {
 
     });
 
-    /* delete customer */
-    /*$("#cus_delete_btn").on('click', () => {
-        customers.splice(recordIndex, 1);
-        loadTable();
-        clear();
-    });*/
     $('#cus_delete_btn').on('click', () => {
-        var customerId = $('#cus_id').val();
+        var customerId = cusId;
 
         $.ajax({
             url: baseURL + '/' + customerId,
@@ -289,12 +201,13 @@ $(document).ready(function () {
 
     /* clear fields */
     function clear() {
-        $('#cus_id').val('');
+        //$('#cus_id').val('');
         $('#cus_nic').val('');
         $('#cus_name').val('');
         $('#cus_phoneNo').val('');
         $('.error').remove();
     }
+
 
     /* Load All Customers */
     $('#cus_getAll_btn').on('click', ()=>{
