@@ -1,7 +1,7 @@
 export default class OrderTmModel {
-    constructor(itemCode, item_name, price, qty, total) {
+    constructor(itemCode, itemName, price, qty, total) {
         this._itemCode = itemCode;
-        this._item_name = item_name;
+        this._itemName = itemName;
         this._price = price;
         this._qty = qty;
         this._total = total;
@@ -15,12 +15,12 @@ export default class OrderTmModel {
         this._itemCode = value;
     }
 
-    get item_name() {
-        return this._item_name;
+    get itemName() {
+        return this._itemName;
     }
 
-    set item_name(value) {
-        this._item_name = value;
+    set itemName(value) {
+        this._itemName = value;
     }
 
     get price() {

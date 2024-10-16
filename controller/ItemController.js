@@ -31,8 +31,8 @@ $(document).ready(function () {
             dataType: 'json',
             success: function (data) {
                 console.log('Items retrieved successfully:', data);
-                items.length = 0; // Clear existing customers
-                items.push(...data); // Add fetched customers
+                items.length = 0;
+                items.push(...data);
                 loadTable();
             },
             error: function (xhr, status, error) {
@@ -44,7 +44,7 @@ $(document).ready(function () {
     // Function to validate item fields
     function validateItemFields() {
         let isValid = true;
-        $('.error').remove(); // Clear any previous error messages
+        $('.error').remove();
 
         if ($('#item_name').val().trim() === '') {
             $('#item_name').after('<span class="error text-danger">Item Name is required</span>');
@@ -54,7 +54,7 @@ $(document).ready(function () {
         if ($('#item_price').val().trim() === '') {
             $('#item_price').after('<span class="error text-danger">Item Price is required</span>');
             isValid = false;
-        } else if (!/^\d+(\.\d{1,2})?$/.test($('#item_price').val().trim())) { // Example price validation
+        } else if (!/^\d+(\.\d{1,2})?$/.test($('#item_price').val().trim())) {
             $('#item_price').after('<span class="error text-danger">Item Price format is invalid</span>');
             isValid = false;
         }
@@ -71,28 +71,28 @@ $(document).ready(function () {
     }
 
     function validateItemName() {
-        $('.error-name').remove(); // Clear previous error messages
+        $('.error-name').remove();
         if ($('#item_name').val().trim() === '') {
             $('#item_name').after('<span class="error text-danger error-name">Item Name is required</span>');
         }
     }
 
     function validateItemPrice() {
-        $('.error-price').remove(); // Clear previous error messages
+        $('.error-price').remove();
         const price = $('#item_price').val().trim();
         if (price === '') {
             $('#item_price').after('<span class="error text-danger error-price">Item Price is required</span>');
-        } else if (!/^\d+(\.\d{1,2})?$/.test(price)) { // Example price validation
+        } else if (!/^\d+(\.\d{1,2})?$/.test(price)) {
             $('#item_price').after('<span class="error text-danger error-price">Item Price format is invalid</span>');
         }
     }
 
     function validateItemQuantity() {
-        $('.error-quantity').remove(); // Clear previous error messages
+        $('.error-quantity').remove();
         const quantity = $('#item_quantity').val().trim();
         if (quantity === '') {
             $('#item_quantity').after('<span class="error text-danger error-quantity">Quantity is required</span>');
-        } else if (!/^\d+$/.test(quantity)) { // Example quantity validation
+        } else if (!/^\d+$/.test(quantity)) {
             $('#item_quantity').after('<span class="error text-danger error-quantity">Quantity format is invalid</span>');
         }
     }
